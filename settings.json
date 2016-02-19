@@ -1,0 +1,14 @@
+{
+	"cas": {
+		"baseUrl": "https://cas-auth.rpi.edu/cas/",
+		"autoClose": true
+	},
+	"public": {
+		"cas": {
+			"loginUrl": "https://cas-auth.rpi.edu/cas/login",
+			"serviceParam":"service",
+			"popupWidth": 800,
+			"popupHeight": 600
+		}
+	}
+}

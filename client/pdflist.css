@@ -1,0 +1,10 @@
+.pdf-list-elem {
+	padding: 10px;
+	font-size: 13pt;
+}
+
+.pdf-list-container {
+	border-width:	2px;
+	border-color:	black;
+	border-style: solid;
+}
