@@ -43,6 +43,7 @@ if(Meteor.isServer) {
 				throw new Meteor.Error('not authorized');
 			}
 			commentData.uid = Meteor.userId();
+			//TODO: validate comment data
 			var id;
 			return PDFComments.insert(commentData, (error, id)=>{
 				if(error) {

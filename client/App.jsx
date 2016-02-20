@@ -192,7 +192,7 @@ var PDFPage = React.createClass({
 				pdf.getPage(pageNum).then(function(page) {
 					var canvas = document.createElement('canvas');
 					var context = canvas.getContext('2d');
-					var scale = Math.max(1,(window.innerWidth / page.getViewport(1).width));
+					var scale = Math.max(1.5,(window.innerWidth / page.getViewport(1).width));
 					var viewport = page.getViewport(scale);
 					canvas.height = viewport.height;
 					canvas.width = viewport.width;
@@ -235,10 +235,42 @@ var PDFPage = React.createClass({
 								var range = selection.getRangeAt(0);
 								var selectData = {};
 								var allChildren = textLayer.textDivs; 
-								selectData.startNodeIndex = allChildren.indexOf(range.startContainer.parentNode);
-								selectData.endNodeIndex = allChildren.indexOf(range.endContainer.parentNode);
+								var startDiv = range.startContainer.parentNode;
+								var endDiv = range.endContainer.parentNode;
 								selectData.startIndex = range.startOffset;
 								selectData.endIndex = range.endOffset;
+								function toDiv(elem) {
+									var offset = 0;
+									function getOffset(elem) {
+										if(elem.previousSibling !== null) {
+											return elem.previousSibling.innerText.length +
+												getOffset(elem.previousSibling);
+										}
+										return 0;
+									}
+									while(elem.nodeName !== 'DIV') {
+										console.log({elem: elem});
+										offset += getOffset(elem);
+										elem = elem.parentNode;
+									}
+									return {elem: elem, offset: offset};
+								}
+								if(startDiv.nodeName !== 'DIV' || endDiv.nodeName !== 'DIV') {
+									//TODO: get data out of spans
+									console.log('Cannot highlight with overlapping spans');
+									var result = toDiv(startDiv);
+									startDiv = result.elem;
+									selectData.startIndex += result.offset;
+									result = toDiv(endDiv);
+									endDiv = result.elem;
+									selectData.endIndex += result.offset;
+									console.log(startDiv.innerText, endDiv);
+									console.log(selection);
+									console.log('Select data', selectData);
+								}
+								selectData.startNodeIndex = allChildren.indexOf(startDiv);
+								selectData.endNodeIndex = allChildren.indexOf(endDiv);
+								
 								selectData.contents = selection.toString();
 								selectData.docId = docId; //ID of the PDF
 								selectData.pageNum = pageNum;
@@ -260,7 +292,11 @@ var PDFPage = React.createClass({
 								submitButton.onclick = function(saveEvent) { 
 									var commentData = {};
 									commentData.commentText = saveEvent.target.previousElementSibling.value;
-									commentData.targetNodeIndex = textLayer.textDivs.indexOf(event.target);
+									var target = event.target;
+									while(target.nodeName !== 'DIV') {
+										target = target.parentNode;
+									}
+									commentData.targetNodeIndex = textLayer.textDivs.indexOf(target);
 									commentData.docId = docId;
 									commentData.pageNum = pageNum;
 									commentData.uid = uid;
@@ -288,16 +324,55 @@ var PDFPage = React.createClass({
 					var addAnnotations = function(textLayer) {
 						// Add existing highlights
 						highlights.forEach(function(highlight) {
-							//TODO: be more selective with highlighting, use comments positioning as a start
 							for(var idx = highlight.startNodeIndex; idx <= highlight.endNodeIndex; idx++) {
 								var hlDiv = textLayer.textDivs[idx];
-								hlDiv.style.backgroundColor = 'red';
+								//hlDiv.style.backgroundColor = 'red';
 								hlDiv.style.opacity = '0.4';
-								/*var spanChild = document.createElement('span');
-								spanChild.innerHTML = hlDiv.innerHTML;
-								hlDiv.innerHTML = '';
-								hlDiv.appendChild(spanChild);*/
-								//TODO: make this work right
+								hlDiv.style.overflow = 'hidden';
+								var spanChild = document.createElement('span');
+								//TODO: clean up, move into separate react component if possible
+								function spansExist(elem) {
+									if(elem.childNodes.length > 0) {
+										return elem.childNodes[0].nodeName === 'SPAN';
+									}
+									return false;
+								}
+								
+								if(idx === highlight.startNodeIndex) {
+									//Check if div is already split
+									if(spansExist(hlDiv)) {
+										console.log(hlDiv.childNodes);
+										//TODO: iterate over spans and recolor
+										hlDiv.style.backgroundColor = 'red';
+										hlDiv.innerHTML = hlDiv.innerText;
+										console.log(highlight);
+										continue;
+									}
+									var spanChildTwo = document.createElement('span');
+									spanChildTwo.innerHTML = hlDiv.innerHTML.substring(0, highlight.startIndex);
+									spanChild.innerHTML = hlDiv.innerHTML.substring(highlight.startIndex);
+									hlDiv.innerHTML = '';
+									hlDiv.appendChild(spanChildTwo);
+									hlDiv.appendChild(spanChild);
+								} else if(idx === highlight.endNodeIndex) {
+									if(spansExist(hlDiv)) {
+										//TODO: iterate and recolor
+										hlDiv.style.backgroundColor = 'red';
+										hlDiv.innerHTML = hlDiv.innerText;
+										break;
+									}
+									var spanChildTwo = document.createElement('span');
+									spanChild.innerHTML = hlDiv.innerHTML.substring(0, highlight.endIndex);
+									spanChildTwo.innerHTML = hlDiv.innerHTML.substring(highlight.endIndex);
+									hlDiv.innerHTML = '';
+									hlDiv.appendChild(spanChild);
+									hlDiv.appendChild(spanChildTwo);
+								} else {
+									spanChild.innerHTML = hlDiv.innerHTML;
+									hlDiv.innerHTML = '';
+									hlDiv.appendChild(spanChild);
+								}
+								spanChild.style.backgroundColor = 'red';
 							}
 						});
 
