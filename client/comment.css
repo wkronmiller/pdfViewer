@@ -1,22 +1,22 @@
 .comment {
-	background-color:	white !important;	
-	color:	black !important;
-	font-size:	12pt;
-	opacity:	.85;
-	border-radius:	4px;
-	border-color:	black;
-	border-width:	1px;
-	border-style:	solid;
-	position:	absolute;
-	z-index:	1000;
-	max-width:	29%;
-	word-wrap:	break-word;
+  background-color:  white !important;  
+  color:  black !important;
+  font-size:  12pt;
+  opacity:  .85;
+  border-radius:  4px;
+  border-color:  black;
+  border-width:  1px;
+  border-style:  solid;
+  position:  absolute;
+  z-index:  1000;
+  max-width:  29%;
+  word-wrap:  break-word;
 }
 .comment-input {
-	min-width:	100px;
-	min-height:	60px;
+  min-width:  100px;
+  min-height:  60px;
 }
 
 .comment-text {
-	margin:	5px;
+  margin:  5px;
 }
