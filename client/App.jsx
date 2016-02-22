@@ -8,7 +8,7 @@ var PDFElem = React.createClass({
   render() {
     var url = 'editor/' + this.props.elemId;
     return(
-      <div className='pdf-list-elem'>
+      <div className='list-group-item'>
         <Link to={url}>{this.props.elemTitle}</Link>
       </div>
     );
@@ -33,9 +33,13 @@ var PDFList = React.createClass({
       );
     }
     return(
-            <div className='container pdf-list-container'>
-              <h1>Stored PDFs</h1>
-              {pdfElems}
+            <div className='panel panel-default'>
+              <div className='panel-heading'>
+                <h1>Stored PDFs</h1>
+              </div>
+              <div className='panel-body list-group'>
+                {pdfElems}
+              </div>
             </div>
           );
   }
@@ -45,12 +49,12 @@ var PDFAdder = React.createClass({
   mixins: [ReactMeteorData],
   getMeteorData() {
     return {
-      userId: Meteor.userId
+      userId: Meteor.userId()
     };
   },
   addPDF(event) {
     var uid = this.data.userId;
-    var data = event.target.parentNode.children.pdfAddForm.children;
+    var data = document.getElementById('pdfAddForm').children;
     //Validate data
     if((function checkData(data) {
       var valid = true;
@@ -84,20 +88,31 @@ var PDFAdder = React.createClass({
     }
 
     var file = new FS.File(data.pdfFile.files[0]);
-    file.metadata = { creatorId: uid, title: data.title.value, url: data.url.value };
+    file.metadata = { creatorId: uid, title: data.title.value, url: data.url.value, shareWith: {} };
     
     console.log('File', file);
+    var progressBar = document.getElementById('uploadProgress');
+    (function watchProgress() {
+      var progress = file.uploadProgress();
+      progressBar.ariaValuenow = progress;
+      progressBar.style.width = progress + '%';
+      if(progress === 100) {
+        return;
+      }
+      setTimeout(watchProgress, 10);
+    })();
 
-    var result = PDFs.insert(file, function(error) {
+    PDFs.insert(file, function(error, fileObj) {
       if(error) {alert(error);}
     });
-    console.log('Result', result);
   },
   render() {
     return (
-      <div className='container pdf-adder-form'>
-        <h3>Upload a New Document</h3>
-        <div id='pdfAddForm'>
+      <div className='panel panel-default'>
+        <div className='panel-heading'>
+          <h3>Upload a New Document</h3>
+        </div>
+        <div id='panel-body pdf-adder-form' id='pdfAddForm'>
           <input
             type='text'
             className='form-control'
@@ -113,7 +128,13 @@ var PDFAdder = React.createClass({
             className='form-control'
             id='pdfFile'></input>
         </div>
-        <button className='btn pull-right' onClick={this.addPDF}>Add PDF</button>
+        <button className='btn pull-left' onClick={this.addPDF}>Add PDF</button>
+        <div className='progress'>
+          <div className='progress-bar' role='progressbar' aria-valuenow='0'
+            aria-valuemin='0' aria-valuemax='100' id='uploadProgress'>
+            Upload Progress
+          </div>
+        </div>
       </div>
     );
   }
@@ -275,7 +296,7 @@ var PDFPage = React.createClass({
                 selectData.docId = docId; //ID of the PDF
                 selectData.pageNum = pageNum;
                 selectData.uid = uid; //User ID
-                console.log('Selection', selectData);
+                console.log('Selection', selectData, 'from', selection);
                 Meteor.call('addHighlight', selectData);
                 return;
               } else if(event.altKey === true) { // Add comment listener

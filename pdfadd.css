@@ -1,6 +1,4 @@
 .pdf-adder-form {
   margin:  20px;
-  vertical-align:  bottom;
-  float:  none;
-  display: table-cell;
+  padding: 10px;
 }
