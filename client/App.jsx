@@ -140,6 +140,27 @@ var PDFAdder = React.createClass({
   }
 });
 
+var PDFText = React.createClass({
+  propTypes: {
+    pdfDoc: React.PropTypes.object,
+    pdfId: React.PropTypes.string.isRequired,
+    pageNum:  React.PropTypes.number.isRequired
+  },
+  mixins: [ReactMeteorData],
+  getMeteorData() {
+    //TODO
+    return {};
+  },
+  render() {
+    if(!this.props.pdfDoc) {
+      return (<div></div>);
+    }
+    console.log('Got PDF', this.props.pdfDoc);
+    //TODO
+    return (<div></div>);
+  }
+});
+
 var PDFPage = React.createClass({
   propTypes: {
     pageNum: React.PropTypes.number.isRequired,
@@ -151,8 +172,8 @@ var PDFPage = React.createClass({
     var id = this.props.pdfId;
 
     var data = { 
-                  ready: false,
-                  uid: Meteor.userId()
+      ready: false,
+      uid: Meteor.userId()
     };
 
     var pageQuery = {docId: id, pageNum: this.props.pageNum};
@@ -179,15 +200,27 @@ var PDFPage = React.createClass({
 
     return data;
   },
+  getInitialState() {
+    return {};
+  },
+  componentWillReceiveProps(nextProps) {
+    if(nextProps.pdfId !== this.props.pdfId) {
+      // New PDF
+      this.setState({pdf:null, pdfPage:null});
+    } else if(nextProps.pageNum !== this.props.pageNum) {
+      // New Page, same PDF
+      this.setState({pdfPage:null});
+    } else {
+      //TODO: just reload highlights
+      this.setState({textContent: null});
+    }
+  },
   render() {
     if(this.data.ready === false) {
       return null;
     } else if (this.data.pdfRecords.length < 1) {
       return null;
     }
-    var pdfRecord = this.data.pdfRecords[0];
-
-    PDFJS.workerSrc = '/packages/wrk961_pdfjs/build/pdf.worker.js';
     
     // Cache data for callbacks
     var docId = this.props.pdfId;
@@ -195,29 +228,43 @@ var PDFPage = React.createClass({
     var uid = this.data.uid;
     var highlights = this.data.highlights;
     var comments = this.data.comments;
-    var reactThis = this;
 
+    var that = this;
 
-    var doc = PDFJS.getDocument(pdfRecord.url()).then(function(pdf) {
+    // Load PDF binary
+    if(!this.state.pdf) {
+      var pdfRecord = this.data.pdfRecords[0];
+      PDFJS.workerSrc = '/packages/wrk961_pdfjs/build/pdf.worker.js';
+      PDFJS.getDocument(pdfRecord.url()).then(function(pdf) {
+        that.setState({pdf: pdf});
+      });
+    } else { // PDF Binary Already Loaded
+      var pdf = this.state.pdf;
       var canvasContainer = document.getElementById('pdfcontainer');
       if(pageNum > pdf.numPages) {
         canvasContainer.innerHTML = '<h1>End of Document</h1>';
         return;
       }
-      if(canvasContainer.children.length > 0) {
-        //PDF already loaded
-        canvasContainer.innerHTML = '';
-      }
       
-      var renderPage = function(pageNum) {
+      // Load specific page
+      if(!this.state.pdfPage) { 
         pdf.getPage(pageNum).then(function(page) {
+          that.setState({pdfPage: page});
+        });
+      } else { // Correct Page Already Loaded
+          var page = this.state.pdfPage;
           var canvas = document.createElement('canvas');
           var context = canvas.getContext('2d');
+          // TODO: make this less awful
           var scale = Math.max(1.5,(window.innerWidth / page.getViewport(1).width));
           var viewport = page.getViewport(scale);
           canvas.height = viewport.height;
           canvas.width = viewport.width;
-          
+
+          if(canvasContainer.children.length > 0) {
+            // Clear canvas of existing stuff
+           canvasContainer.innerHTML = '';
+          }
           canvasContainer.appendChild(canvas);
           
           var $textLayerDiv = jQuery('<div />').addClass('textLayer')
@@ -230,14 +277,18 @@ var PDFPage = React.createClass({
           jQuery('#pdfcontainer').append($textLayerDiv);
 
           //Load text
-          page.getTextContent().then(function(textContent) {
+          if(!this.state.textContent) {
+            page.getTextContent().then(function(textContent) {
+              that.setState({textContent:textContent});
+            });
+          } else {
             var textLayerDiv = $textLayerDiv.get(0);
             var textLayer = new TextLayerBuilder({
               textLayerDiv: textLayerDiv,
               pageIndex: pageNum -1,
               viewport: viewport
             });
-            textLayer.setTextContent(textContent);
+            textLayer.setTextContent(this.state.textContent);
             page.render({canvasContext: context, viewport:viewport, textLayer: textLayer});
             textLayer.render();
 
@@ -336,13 +387,6 @@ var PDFPage = React.createClass({
               }
             }
 
-            // Add existing annotations
-            addAnnotations(textLayer);
-
-          });
-
-          // Add existing annotations to a document
-          var addAnnotations = function(textLayer) {
             // Add existing highlights
             highlights.forEach(function(highlight) {
               for(var idx = highlight.startNodeIndex; idx <= highlight.endNodeIndex; idx++) {
@@ -432,12 +476,14 @@ var PDFPage = React.createClass({
             }
           }
 
-        });
-      };
-      renderPage(pageNum);
-    });
-
-    return null;
+      }
+    }
+    return (<PDFText
+              pdfDoc={this.props.pdf}
+              pdfId={this.props.pdfId}
+              pageNum={this.props.pageNum}
+            />
+    );
   }
 });
 
