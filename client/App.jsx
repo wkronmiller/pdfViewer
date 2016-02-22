@@ -27,7 +27,7 @@ var PDFList = React.createClass({
     for(var index = 0; index < this.data.existingPDFs.length; index++) {
       var pdf = this.data.existingPDFs[index];
       pdfElems.push(
-                    <PDFElem key={pdf._id} 
+                    <PDFElem key={pdf._id}
                             elemTitle={pdf.metadata.title}
                             elemId={pdf._id} />
       );
@@ -89,7 +89,7 @@ var PDFAdder = React.createClass({
 
     var file = new FS.File(data.pdfFile.files[0]);
     file.metadata = { creatorId: uid, title: data.title.value, url: data.url.value, shareWith: {} };
-    
+
     var progressBar = document.getElementById('uploadProgress');
     (function watchProgress() {
       var progress = file.uploadProgress();
@@ -170,7 +170,7 @@ var PDFPage = React.createClass({
   getMeteorData() {
     var id = this.props.pdfId;
 
-    var data = { 
+    var data = {
       ready: false,
       uid: Meteor.userId()
     };
@@ -220,7 +220,7 @@ var PDFPage = React.createClass({
     } else if (this.data.pdfRecords.length < 1) {
       return null;
     }
-    
+
     // Cache data for callbacks
     var docId = this.props.pdfId;
     var pageNum = this.props.pageNum;
@@ -244,9 +244,9 @@ var PDFPage = React.createClass({
         canvasContainer.innerHTML = '<h1>End of Document</h1>';
         return;
       }
-      
+
       // Load specific page
-      if(!this.state.pdfPage) { 
+      if(!this.state.pdfPage) {
         pdf.getPage(pageNum).then(function(page) {
           that.setState({pdfPage: page});
         });
@@ -265,7 +265,7 @@ var PDFPage = React.createClass({
            canvasContainer.innerHTML = '';
           }
           canvasContainer.appendChild(canvas);
-          
+
           var $textLayerDiv = jQuery('<div />').addClass('textLayer')
                 .css('height', viewport.height + 'px')
                 .css('width', viewport.width + 'px')
@@ -294,18 +294,18 @@ var PDFPage = React.createClass({
             //Add highlight listener
             textLayerDiv.onmouseup = function(event) {
               // Use ctrl+click to save highlight
-              if(event.ctrlKey == true) { 
+              if(event.ctrlKey == true) {
                 var selection = document.getSelection();
-                
+
                 // We want a highlight, not a click
                 if(selection.type !== 'Range' || selection.collapsed) {
                   return;
                 }
-                
+
                 // Get selection contents
                 var range = selection.getRangeAt(0);
                 var selectData = {};
-                var allChildren = textLayer.textDivs; 
+                var allChildren = textLayer.textDivs;
                 var startDiv = range.startContainer.parentNode;
                 var endDiv = range.endContainer.parentNode;
                 selectData.startIndex = range.startOffset;
@@ -336,7 +336,7 @@ var PDFPage = React.createClass({
                 }
                 selectData.startNodeIndex = allChildren.indexOf(startDiv);
                 selectData.endNodeIndex = allChildren.indexOf(endDiv);
-                
+
                 selectData.contents = selection.toString();
                 selectData.docId = docId; //ID of the PDF
                 selectData.pageNum = pageNum;
@@ -354,7 +354,7 @@ var PDFPage = React.createClass({
                 var submitButton = document.createElement('button');
                 submitButton.innerHTML = 'Save';
                 submitButton.className = 'btn';
-                submitButton.onclick = function(saveEvent) { 
+                submitButton.onclick = function(saveEvent) {
                   var commentData = {};
                   commentData.commentText = saveEvent.target.previousElementSibling.value;
                   var target = event.target;
@@ -375,9 +375,8 @@ var PDFPage = React.createClass({
                   top: event.clientY - $(commentBox).height(),
                   left: event.clientX
                 });
-
               }
-            }
+            }//Highlight event listener
 
             // Add existing highlights
             highlights.forEach(function(highlight) {
@@ -394,7 +393,7 @@ var PDFPage = React.createClass({
                   }
                   return false;
                 }
-                
+
                 if(idx === highlight.startNodeIndex) {
                   //Check if div is already split
                   if(spansExist(hlDiv)) {
@@ -424,12 +423,12 @@ var PDFPage = React.createClass({
                   hlDiv.appendChild(spanChildTwo);
                 } else {
                   spanChild.innerHTML = hlDiv.innerHTML;
-                  hlDiv.innerHTML = '';
+                  hlDiv.innerHTML = ''; this  paper proposes   a   software   system   which   is   capable   to   capture knowledge about the underlying production process
                   hlDiv.appendChild(spanChild);
                 }
                 spanChild.style.backgroundColor = 'red';
               }
-            });
+            }); //Add highlights
 
             // Add existing comments
             var commentMap = {};
@@ -441,7 +440,7 @@ var PDFPage = React.createClass({
             for(var targetIndex in commentMap) {
               var matchedComments = commentMap[targetIndex];
               var textDiv = allChildren[targetIndex];
-              
+
               var commentBox = document.createElement('div');
               commentBox.className = 'comment';
               // Add comments to box
@@ -452,7 +451,7 @@ var PDFPage = React.createClass({
                 commentBox.appendChild(comment);
               }
 
-              // Add comment box to document          
+              // Add comment box to document
               textDiv.parentNode.appendChild(commentBox);
 
               // Position comment box
@@ -462,11 +461,10 @@ var PDFPage = React.createClass({
               commentBox.style.left = textDiv.style.left;
               $textLayerDiv.get(0).style.opacity = '1';
 
-            }
-          }
-
-      }
-    }
+            } //Add comments
+          }//Text layer load
+      }// Page load
+    } // PDF Load
     return (<PDFText
               pdfDoc={this.props.pdf}
               pdfId={this.props.pdfId}
@@ -487,7 +485,7 @@ var PDFEditor = React.createClass({
     } else {
       data.ready = true;
     }
-    
+
     data.pdfRecord = PDFs.find({_id: id}).fetch()[0];
     return data;
   },
@@ -518,7 +516,7 @@ var PDFEditor = React.createClass({
         <div className='pull-right'>
           {(()=> {
               if(pageNum > 1){
-                return ( 
+                return (
                   <Link to={`/editor/${this.props.params.pdfId}/${pageNum - 1}`}>
                     <button className='btn'>Prev Page</button>
                   </Link>
