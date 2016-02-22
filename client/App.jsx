@@ -139,27 +139,6 @@ var PDFAdder = React.createClass({
   }
 });
 
-var PDFText = React.createClass({
-  propTypes: {
-    pdfDoc: React.PropTypes.object,
-    pdfId: React.PropTypes.string.isRequired,
-    pageNum:  React.PropTypes.number.isRequired
-  },
-  mixins: [ReactMeteorData],
-  getMeteorData() {
-    //TODO
-    return {};
-  },
-  render() {
-    if(!this.props.pdfDoc) {
-      return (<div></div>);
-    }
-    console.log('Got PDF', this.props.pdfDoc);
-    //TODO
-    return (<div></div>);
-  }
-});
-
 var PDFPage = React.createClass({
   propTypes: {
     pageNum: React.PropTypes.number.isRequired,
@@ -211,8 +190,19 @@ var PDFPage = React.createClass({
       this.setState({pdfPage:null});
     } else {
       //TODO: just reload highlights
+      console.log('Got new props', nextProps);
       this.setState({textContent: null});
     }
+  },
+  handleResize(e) {
+    // Re-render text divs on resize
+    this.setState({textContent:null});
+  },
+  componentDidMount() {
+    window.addEventListener('resize', this.handleResize);
+  },
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.handleResize);
   },
   render() {
     if(this.data.ready === false) {
@@ -248,7 +238,7 @@ var PDFPage = React.createClass({
       // Load specific page
       if(!this.state.pdfPage) {
         pdf.getPage(pageNum).then(function(page) {
-          that.setState({pdfPage: page});
+          that.setState({pdfPage: page, textContent: null});
         });
       } else { // Correct Page Already Loaded
           var page = this.state.pdfPage;
@@ -290,6 +280,8 @@ var PDFPage = React.createClass({
             textLayer.setTextContent(this.state.textContent);
             page.render({canvasContext: context, viewport:viewport, textLayer: textLayer});
             textLayer.render();
+
+            $textLayerDiv.get(0).style.opacity = '1';
 
             //Add highlight listener
             textLayerDiv.onmouseup = function(event) {
@@ -369,12 +361,20 @@ var PDFPage = React.createClass({
                 };
                 commentBox.appendChild(submitButton);
 
-                canvasContainer.appendChild(commentBox);
-
-                $(commentBox).offset({
-                  top: event.clientY - $(commentBox).height(),
-                  left: event.clientX
-                });
+                //Position Comment Box
+                var positionTarget = event.target;
+                // Avoid anchoring to highlight span
+                while((positionTarget) && (positionTarget.nodeName !== 'DIV')) {
+                  positionTarget = positionTarget.parentNode;
+                }
+                if(!positionTarget) {
+                  return;
+                }
+                 
+                positionTarget.parentNode.appendChild(commentBox);
+                commentBox.style.top = positionTarget.style.top;
+                commentBox.style.left = positionTarget.style.left;
+                console.log('Comment box', {commentBox});
               }
             }//Highlight event listener
 
@@ -459,18 +459,12 @@ var PDFPage = React.createClass({
               topOffset = topOffset.toString() + 'px';
               commentBox.style.top = topOffset;
               commentBox.style.left = textDiv.style.left;
-              $textLayerDiv.get(0).style.opacity = '1';
-
-            } //Add comments
+      
+           } //Add comments
           }//Text layer load
       }// Page load
     } // PDF Load
-    return (<PDFText
-              pdfDoc={this.props.pdf}
-              pdfId={this.props.pdfId}
-              pageNum={this.props.pageNum}
-            />
-    );
+    return null;
   }
 });
 

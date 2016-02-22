@@ -22,6 +22,7 @@ if(Meteor.isServer) {
   Meteor.publish('pdfs', function() {
     var shareQuery = {};
     shareQuery['meteadata.shareWith.' + String(this.userId)] = true;
+    //shareQuery['metedata.shareWith.' + String(this.user().profile.name)] = true; //TODO
     var queries = [
       {'metadata.creatorId': this.userId},
       shareQuery];
