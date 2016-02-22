@@ -423,7 +423,7 @@ var PDFPage = React.createClass({
                   hlDiv.appendChild(spanChildTwo);
                 } else {
                   spanChild.innerHTML = hlDiv.innerHTML;
-                  hlDiv.innerHTML = ''; this  paper proposes   a   software   system   which   is   capable   to   capture knowledge about the underlying production process
+                  hlDiv.innerHTML = '';
                   hlDiv.appendChild(spanChild);
                 }
                 spanChild.style.backgroundColor = 'red';
