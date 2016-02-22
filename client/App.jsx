@@ -90,7 +90,6 @@ var PDFAdder = React.createClass({
     var file = new FS.File(data.pdfFile.files[0]);
     file.metadata = { creatorId: uid, title: data.title.value, url: data.url.value, shareWith: {} };
     
-    console.log('File', file);
     var progressBar = document.getElementById('uploadProgress');
     (function watchProgress() {
       var progress = file.uploadProgress();
@@ -270,7 +269,6 @@ var PDFPage = React.createClass({
                     return 0;
                   }
                   while(elem.nodeName !== 'DIV') {
-                    console.log({elem: elem});
                     offset += getOffset(elem);
                     elem = elem.parentNode;
                   }
@@ -278,16 +276,12 @@ var PDFPage = React.createClass({
                 }
                 if(startDiv.nodeName !== 'DIV' || endDiv.nodeName !== 'DIV') {
                   //TODO: get data out of spans
-                  console.log('Cannot highlight with overlapping spans');
                   var result = toDiv(startDiv);
                   startDiv = result.elem;
                   selectData.startIndex += result.offset;
                   result = toDiv(endDiv);
                   endDiv = result.elem;
                   selectData.endIndex += result.offset;
-                  console.log(startDiv.innerText, endDiv);
-                  console.log(selection);
-                  console.log('Select data', selectData);
                 }
                 selectData.startNodeIndex = allChildren.indexOf(startDiv);
                 selectData.endNodeIndex = allChildren.indexOf(endDiv);
@@ -300,7 +294,6 @@ var PDFPage = React.createClass({
                 Meteor.call('addHighlight', selectData);
                 return;
               } else if(event.altKey === true) { // Add comment listener
-                console.log(event);
                 var commentBox = document.createElement('div');
                 commentBox.className = 'comment';
                 var inputField = document.createElement('input');
@@ -321,7 +314,6 @@ var PDFPage = React.createClass({
                   commentData.docId = docId;
                   commentData.pageNum = pageNum;
                   commentData.uid = uid;
-                  console.log('Comment', commentData);
                   Meteor.call('addComment', commentData);
                 };
                 commentBox.appendChild(submitButton);
@@ -362,11 +354,9 @@ var PDFPage = React.createClass({
                 if(idx === highlight.startNodeIndex) {
                   //Check if div is already split
                   if(spansExist(hlDiv)) {
-                    console.log(hlDiv.childNodes);
                     //TODO: iterate over spans and recolor
                     hlDiv.style.backgroundColor = 'red';
                     hlDiv.innerHTML = hlDiv.innerText;
-                    console.log(highlight);
                     continue;
                   }
                   var spanChildTwo = document.createElement('span');
