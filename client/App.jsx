@@ -329,6 +329,13 @@ var PDFPage = React.createClass({
                 selectData.startNodeIndex = allChildren.indexOf(startDiv);
                 selectData.endNodeIndex = allChildren.indexOf(endDiv);
 
+                //Sanity checking
+                if(selectData.startNodeIndex < 0 || selectData.endNodeIndex < 0) {
+                  console.log('Selection failed', selectData, selection);
+                  //TODO: debug this
+                  return;
+                }
+
                 selectData.contents = selection.toString();
                 selectData.docId = docId; //ID of the PDF
                 selectData.pageNum = pageNum;
@@ -379,15 +386,14 @@ var PDFPage = React.createClass({
             }//Highlight event listener
 
             // Add existing highlights
-            var hlColor = (function() {
+            var getHlColor = function(uid) {
               var hash = '';
               for(var idx = 0; idx < uid.length; idx++) {
                 hash += uid.charCodeAt(idx);
                 hash %= 0xFFFFFF;
               }
               return '#' + hash.toString(16);
-            })();
-            console.log('hlcolor', hlColor);
+            }
             highlights.forEach(function(highlight) {
               for(var idx = highlight.startNodeIndex; idx <= highlight.endNodeIndex; idx++) {
                 var hlDiv = textLayer.textDivs[idx];
@@ -402,6 +408,9 @@ var PDFPage = React.createClass({
                   }
                   return false;
                 }
+
+                // Associate highlight creator with a color
+                var hlColor = getHlColor(highlight.uid);
 
                 if(idx === highlight.startNodeIndex) {
                   //Check if div is already split
