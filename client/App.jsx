@@ -379,6 +379,15 @@ var PDFPage = React.createClass({
             }//Highlight event listener
 
             // Add existing highlights
+            var hlColor = (function() {
+              var hash = '';
+              for(var idx = 0; idx < uid.length; idx++) {
+                hash += uid.charCodeAt(idx);
+                hash %= 0xFFFFFF;
+              }
+              return '#' + hash.toString(16);
+            })();
+            console.log('hlcolor', hlColor);
             highlights.forEach(function(highlight) {
               for(var idx = highlight.startNodeIndex; idx <= highlight.endNodeIndex; idx++) {
                 var hlDiv = textLayer.textDivs[idx];
@@ -398,7 +407,7 @@ var PDFPage = React.createClass({
                   //Check if div is already split
                   if(spansExist(hlDiv)) {
                     //TODO: iterate over spans and recolor
-                    hlDiv.style.backgroundColor = 'red';
+                    hlDiv.style.backgroundColor = hlColor;
                     hlDiv.innerHTML = hlDiv.innerText;
                     continue;
                   }
@@ -411,7 +420,7 @@ var PDFPage = React.createClass({
                 } else if(idx === highlight.endNodeIndex) {
                   if(spansExist(hlDiv)) {
                     //TODO: iterate and recolor
-                    hlDiv.style.backgroundColor = 'red';
+                    hlDiv.style.backgroundColor = hlColor;
                     hlDiv.innerHTML = hlDiv.innerText;
                     break;
                   }
@@ -426,7 +435,7 @@ var PDFPage = React.createClass({
                   hlDiv.innerHTML = '';
                   hlDiv.appendChild(spanChild);
                 }
-                spanChild.style.backgroundColor = 'red';
+                spanChild.style.backgroundColor = hlColor;
               }
             }); //Add highlights
 
