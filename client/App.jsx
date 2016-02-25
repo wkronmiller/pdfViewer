@@ -111,7 +111,7 @@ var PDFAdder = React.createClass({
         <div className='panel-heading'>
           <h3>Upload a New Document</h3>
         </div>
-        <div id='panel-body pdf-adder-form' id='pdfAddForm'>
+        <div className='panel-body pdf-adder-form' id='pdfAddForm'>
           <input
             type='text'
             className='form-control'
@@ -127,7 +127,7 @@ var PDFAdder = React.createClass({
             className='form-control'
             id='pdfFile'></input>
         </div>
-        <button className='btn pull-left' onClick={this.addPDF}>Add PDF</button>
+        <div><button className='btn pull-left' onClick={this.addPDF}>Add PDF</button></div>
         <div className='progress'>
           <div className='progress-bar' role='progressbar' aria-valuenow='0'
             aria-valuemin='0' aria-valuemax='100' id='uploadProgress'>
@@ -232,7 +232,7 @@ var PDFPage = React.createClass({
       var canvasContainer = document.getElementById('pdfcontainer');
       if(pageNum > pdf.numPages) {
         canvasContainer.innerHTML = '<h1>End of Document</h1>';
-        return;
+        return null;
       }
 
       // Load specific page
@@ -245,7 +245,7 @@ var PDFPage = React.createClass({
           var canvas = document.createElement('canvas');
           var context = canvas.getContext('2d');
           // TODO: make this less awful
-          var scale = Math.max(1.5,(window.innerWidth / page.getViewport(1).width));
+          var scale = $('#pdfcontainer').width() / page.getViewport(1).width;
           var viewport = page.getViewport(scale);
           canvas.height = viewport.height;
           canvas.width = viewport.width;
@@ -260,8 +260,8 @@ var PDFPage = React.createClass({
                 .css('height', viewport.height + 'px')
                 .css('width', viewport.width + 'px')
                 .offset({
-                  top: $(canvas).offset().top,
-                  left: $(canvas).offset().left
+               /*   top: $(canvas).offset().top,
+                  left: $(canvas).offset().left*/
                 }).attr('id', 'textLayerDiv');
           jQuery('#pdfcontainer').append($textLayerDiv);
 
@@ -277,9 +277,15 @@ var PDFPage = React.createClass({
               pageIndex: pageNum -1,
               viewport: viewport
             });
+
+            //return; //TODO: delete this
+
             textLayer.setTextContent(this.state.textContent);
             page.render({canvasContext: context, viewport:viewport, textLayer: textLayer});
             textLayer.render();
+
+            $('#pdfRow').height($textLayerDiv.height());
+            //$('.pdf-header').width($('#pdfRow').width());
 
             $textLayerDiv.get(0).style.opacity = '1';
 
@@ -377,7 +383,7 @@ var PDFPage = React.createClass({
                 if(!positionTarget) {
                   return;
                 }
-                 
+
                 positionTarget.parentNode.appendChild(commentBox);
                 commentBox.style.top = positionTarget.style.top;
                 commentBox.style.left = positionTarget.style.left;
@@ -477,7 +483,7 @@ var PDFPage = React.createClass({
               topOffset = topOffset.toString() + 'px';
               commentBox.style.top = topOffset;
               commentBox.style.left = textDiv.style.left;
-      
+
            } //Add comments
           }//Text layer load
       }// Page load
@@ -514,31 +520,46 @@ var PDFEditor = React.createClass({
       pageNum = parseInt(pageNum);
     }
     return(
-      <div className='container-fluid'>
-        <h1>{this.data.pdfRecord.metadata.title}</h1>
-        <p>URL: <a href={this.data.pdfRecord.metadata.url}>{this.data.pdfRecord.metadata.url}</a></p>
-        <p>Page Number: {pageNum}</p>
-        <h3>Select text while holding ctrl key to make a highlight.</h3>
-        <div className='pdf-content' id='pdfcontainer'>
-          <PDFPage
-            pdfId={this.props.params.pdfId}
-            pageNum={pageNum}>
-          </PDFPage>
+      <div>
+        <div className='container'>
+        <div className='row pdf-header'>
+          <h1>{this.data.pdfRecord.metadata.title}</h1>
+          <p>URL: <a href={this.data.pdfRecord.metadata.url}>{this.data.pdfRecord.metadata.url}</a></p>
         </div>
-        <div className='pull-right'>
-          {(()=> {
-              if(pageNum > 1){
-                return (
-                  <Link to={`/editor/${this.props.params.pdfId}/${pageNum - 1}`}>
-                    <button className='btn'>Prev Page</button>
-                  </Link>
-                );
-              }
-              return null;
-          })()}
-          <Link to={`/editor/${this.props.params.pdfId}/${pageNum + 1}`}>
-            <button className='btn'>Next Page</button>
-          </Link>
+        <div className='row' id='pdfRow'>
+          <div className='col-md-1 pdf-sidebar-container'>
+            &nbsp;
+            {(()=> {
+                if(pageNum > 1){
+                  return (
+                    <Link className='fill-height pdf-sidebar'
+                      to={`/editor/${this.props.params.pdfId}/${pageNum - 1}`}>
+                      <div className='container-fluid'><i className='fa fa-chevron-left fa-5x'></i></div>
+                    </Link>
+                  );
+                } else {
+                  return <div className='fill-height pdf-sidebar container-fluid'></div>
+                }
+            })()}
+          </div>
+          <div className='col-md-10 pdf-content-column'>
+                <div className='pdf-content' id='pdfcontainer'>
+                  <PDFPage
+                    pdfId={this.props.params.pdfId}
+                    pageNum={pageNum}>
+                  </PDFPage>
+                </div>
+          </div>
+          <div className='col-md-1 pdf-sidebar-container'>
+            &nbsp;
+            <Link className='fill-height pdf-sidebar' to={`/editor/${this.props.params.pdfId}/${pageNum + 1}`}>
+              <div className='container-fluid'><i className='fa fa-chevron-right fa-5x'></i></div>
+            </Link>
+          </div>
+        </div>
+        <div className='row pdf-footer'>
+          <p>Page Number: {pageNum}</p>
+        </div>
         </div>
       </div>
     );
@@ -548,11 +569,11 @@ var PDFEditor = React.createClass({
 var Main = React.createClass({
   render() {
     return(
-            <div className='container'>
+            <div>
               <PDFList />
               <PDFAdder />
             </div>
-          );
+    );
   }
 });
 
