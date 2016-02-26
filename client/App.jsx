@@ -235,6 +235,8 @@ var PDFPage = React.createClass({
         return null;
       }
 
+      console.log('Num pages', pdf.numPages);
+
       // Load specific page
       if(!this.state.pdfPage) {
         pdf.getPage(pageNum).then(function(page) {
@@ -522,6 +524,11 @@ var PDFEditor = React.createClass({
     return(
       <div>
         <div className='container'>
+        <div className='row pdf-super-header'>
+          <div className='col-md-12'>
+            <Link to='/'><i className='fa fa-home fa-5x'></i></Link>
+          </div>
+        </div>
         <div className='row pdf-header'>
           <h1>{this.data.pdfRecord.metadata.title}</h1>
           <p>URL: <a href={this.data.pdfRecord.metadata.url}>{this.data.pdfRecord.metadata.url}</a></p>

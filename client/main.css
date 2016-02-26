@@ -5,7 +5,7 @@ html, body {
   overflow: auto;
 }
 body {
-  background-color: #E8F5E9;
+  background-color: #e8e2e1;
   position: relative;
   font-family: 'Roboto', sans-serif;
 }
@@ -40,23 +40,43 @@ input {
   color:  white;
 }
 
+.pdf-super-header {
+  visibility: hidden;
+}
+
 .pdf-header {
   margin-top: 1px;
-  background-color: #8BC34A;
+  background-color: #60a0a6;
   color: white;
   padding:  10px;
   padding-left: 20px;
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+}
+
+@media (min-height: 2000px) {
+  .pdf-super-header {
+    visibility: visible;
+    text-align: center;
+    display:  flex;
+    height: 30%;  
+  
+  }
+  .pdf-super-header div {
+    height: 30%;
+  }
+  .pdf-super-header .fa {
+    text-align: center;
+  }
 }
 
 .pdf-footer {
-  background-color: #8BC34A;
+  background-color: #60a0a6;
   color: white;
   padding:  10px;
   padding-left: 20px;
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
+  border-bottom-left-radius: 2px;
+  border-bottom-right-radius: 2px;
 }
 
 
@@ -72,9 +92,10 @@ input {
   top: 0; bottom: 0;
   overflow: auto;
   visibility: hidden;
-  background: #7CB342;
+  background: #626a70;
   display:  flex;
   align-items:  center;
+  opacity:  .9;
 }
 
 .pdf-sidebar .fa {
@@ -98,6 +119,7 @@ input {
   width: 100%;
   height: 100%;
   position: absolute;
+  opacity:  .9;
 }
 .textLayer {
   position: absolute;
