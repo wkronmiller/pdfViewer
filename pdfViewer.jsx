@@ -17,6 +17,9 @@ if(Meteor.isServer) {
   PDFs.allow({
     'insert': function() {
       return true;
+    },
+    download: function() {
+      return true;
     }
   });
   Meteor.publish('pdfs', function() {
