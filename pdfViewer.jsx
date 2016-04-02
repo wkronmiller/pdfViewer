@@ -15,7 +15,7 @@ PDFUserdata = new Mongo.Collection('pdfUserData');
  
 if(Meteor.isServer) {
   PDFs.allow({
-    'insert': function() {
+    insert: function() {
       return true;
     },
     download: function() {

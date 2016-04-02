@@ -11,6 +11,7 @@
   z-index:  1000;
   max-width:  29%;
   word-wrap:  break-word;
+  word-break: break-word;
 }
 .comment-input {
   min-width:  100px;
@@ -19,4 +20,5 @@
 
 .comment-text {
   margin:  5px;
+  white-space:  normal;
 }

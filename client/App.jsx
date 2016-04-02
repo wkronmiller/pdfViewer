@@ -197,6 +197,7 @@ var PDFPage = React.createClass({
   handleResize(e) {
     // Re-render text divs on resize
     this.setState({textContent:null});
+    //TODO: this isn't hooked up yet
   },
   componentDidMount() {
     window.addEventListener('resize', this.handleResize);
@@ -513,6 +514,9 @@ var PDFEditor = React.createClass({
     pdfId: React.PropTypes.string,
     pageNum: React.PropTypes.string
   },
+  handleTouch(e) {
+    //TODO
+  },
   render() {
     if(this.data.ready === false) { return null; }
     var pageNum = this.props.params.pageNum;
@@ -522,7 +526,7 @@ var PDFEditor = React.createClass({
       pageNum = parseInt(pageNum);
     }
     return(
-      <div>
+      <div onTouchMove={this.handleTouch}>
         <div className='container'>
         <div className='row pdf-super-header'>
           <div className='col-md-12'>
