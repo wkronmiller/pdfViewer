@@ -1,4 +1,8 @@
-const { browserHistory, Router, Route, IndexRoute, Link } = ReactRouter;
+import React from 'react';
+import ReactDOM from 'react-dom';
+import {Meteor } from 'meteor/meteor';
+import { render } from 'react-dom';
+import { browserHistory, Router, Route, IndexRoute, Link } from 'react-router';
 
 var PDFElem = React.createClass({
   propTypes: {
