@@ -183,7 +183,7 @@ var PDFPage = React.createClass({
     return data;
   },
   getInitialState() {
-    return {};
+    return {showComments: true};
   },
   componentWillReceiveProps(nextProps) {
     if(nextProps.pdfId !== this.props.pdfId) {
@@ -224,6 +224,18 @@ var PDFPage = React.createClass({
     var comments = this.data.comments;
 
     var that = this;
+
+    // Set keypress callback
+    var handleKey = function(evt) {
+      function hideComment() {
+        that.setState({showComments: !that.state.showComments});
+      }
+      console.log('event', evt);
+      if(evt.code === 'Escape') {
+        hideComment();
+      }
+    }
+    document.onkeydown = handleKey;
 
     // Load PDF binary
     if(!this.state.pdf) {
@@ -461,37 +473,39 @@ var PDFPage = React.createClass({
               }
             }); //Add highlights
 
-            // Add existing comments
-            var commentMap = {};
-            comments.forEach(function(comment) {
-              commentMap[comment.targetNodeIndex] = commentMap[comment.targetNodeIndex] || [];
-              commentMap[comment.targetNodeIndex].push(comment);
-            });
-            var allChildren = textLayer.textDivs;
-            for(var targetIndex in commentMap) {
-              var matchedComments = commentMap[targetIndex];
-              var textDiv = allChildren[targetIndex];
+            if(this.state.showComments) {
+              // Add existing comments
+              var commentMap = {};
+              comments.forEach(function(comment) {
+                commentMap[comment.targetNodeIndex] = commentMap[comment.targetNodeIndex] || [];
+                commentMap[comment.targetNodeIndex].push(comment);
+              });
+              var allChildren = textLayer.textDivs;
+              for(var targetIndex in commentMap) {
+                var matchedComments = commentMap[targetIndex];
+                var textDiv = allChildren[targetIndex];
 
-              var commentBox = document.createElement('div');
-              commentBox.className = 'comment';
-              // Add comments to box
-              for(var commentIdx in matchedComments) {
-                var comment = document.createElement('div');
-                comment.className = 'comment-text';
-                comment.innerHTML = matchedComments[commentIdx].commentText;
-                commentBox.appendChild(comment);
-              }
+                var commentBox = document.createElement('div');
+                commentBox.className = 'comment';
+                // Add comments to box
+                for(var commentIdx in matchedComments) {
+                  var comment = document.createElement('div');
+                  comment.className = 'comment-text';
+                  comment.innerHTML = matchedComments[commentIdx].commentText;
+                  commentBox.appendChild(comment);
+                }
 
-              // Add comment box to document
-              textDiv.parentNode.appendChild(commentBox);
+                // Add comment box to document
+                textDiv.parentNode.appendChild(commentBox);
 
-              // Position comment box
-              var topOffset = parseFloat(textDiv.style.top.replace('px', '')) - (20 * matchedComments.length);
-              topOffset = topOffset.toString() + 'px';
-              commentBox.style.top = topOffset;
-              commentBox.style.left = textDiv.style.left;
+                // Position comment box
+                var topOffset = parseFloat(textDiv.style.top.replace('px', '')) - (20 * matchedComments.length);
+                topOffset = topOffset.toString() + 'px';
+                commentBox.style.top = topOffset;
+                commentBox.style.left = textDiv.style.left;
 
-           } //Add comments
+              } //Add comments
+            }
           }//Text layer load
       }// Page load
     } // PDF Load
